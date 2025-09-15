@@ -1,0 +1,80 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <title>New Experiment</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/x-icon" href="{% static "my_app/static/favicon.ico"%}">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+    <div class="jumbotron jumbotron-fluid" style="background-color: rgb(125, 229, 234);">
+        <div class="container" style="margin-left: 50px;">
+            <h1 class="display-3">New Experiment</h1>
+            <hr>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6" style="margin-right:50px; max-width:400px">
+                <form method='post' id='upload_form' onkeydown="return event.key !== 'Enter';" style="margin-left: 50px;" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% if error %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="alert">
+                            <strong>ERROR: EMPTY INPUT!</strong>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endif %}
+                    <label for="experiment_name">Experiment Name</label>
+                    <input type="text" class="form-control" name="experiment_name" id="experiment_name" placeholder="Input Experiment Name" style="min-width: 250px">
+                    <br>
+                    <div class="form-group">
+                        <label for="csv_upload">Upload CSV File</label>
+                        <label for="csv_upload" style="font-weight: bold; color:red">Please just upload the raw data WITHOUT ANY PROCESSING</label>
+                        <input type="file" class="form-control-file" name="csv" id="csv_upload" placeholder="upload csv" aria-describedby="fileHelpId" accept="text/csv">
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-outline-primary">Create</button>
+                    {% if not error %}
+
+                    {% endif %}
+                </form>
+                <div id="ff">
+                </div>
+
+            </div>
+            <div class="col-md-6" style="left: 250px">
+                <label for="format_img" style="font-weight: bold; color:red">Please make sure your file is in the format of the image below, otherwise the algorithm would not parse it correctly</label>
+                <img style=" max-width:700px" src="{% static 'my_app/static/CSV_Format.png' %}" id="format_img" alt="CSV_Format">
+                <label for="format_img">If you have angles in your data, please make sure it is in RADIANS, otherwise the error propagation or possible transformation involving trignometric functions will be incorrect</label>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script>
+        function submitForm()
+        {
+            document.getElementById("upload-form").submit();
+        }
+
+        setTimeout(()=>{
+            $(".alert").alert("close");
+        }, 2500)
+    </script>
+
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>

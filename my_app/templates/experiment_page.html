@@ -1,0 +1,338 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Levidencer</title>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="icon" type="image/x-icon" href="{% static "my_app/static/favicon.ico"%}">
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    </head>
+    <body>
+        <div class="container" id="areas">
+        {% csrf_token %}
+            <button><a href="/home">Return to home</a></button>
+
+            <div id="raw_df" style="border-radius: 25px; border: 2px solid; margin-top:3px">
+                <h1 class="display-4" style="margin-left:2.5%">Raw Data Table</h1>
+                {{ df_html|safe }}
+            </div>
+            <div class="container">
+                {% for block in blocks %}
+                    <hr>
+                    <div class="block_item">
+                        <div class="row">
+                            <div class="col-lg-8">
+{#                                <p>{{ block.BLOCKS_ID }}</p>#}
+                                <img id="image_{{ block.BLOCKS_ID }}" src="{% static 'my_app/static/PLOTS/' %}{{ block.BLOCKS_ID }}.png" alt="PLOT" style="max-width:800px">
+{#                                <div id="xerr_{{ block.BLOCKS_ID }}"><p>xerr={{ block.X_ERR }}</p></div>#}
+{#                                <div id="yerr_{{ block.BLOCKS_ID }}"><p>yerr={{ block.Y_ERR }}</p></div>#}
+                            </div>
+                            <div class="col">
+                                <form method="post" id="form_{{ block.BLOCKS_ID }}" action={% url 'process_block' block_id=block.BLOCKS_ID ex_id=block.EXPERIMENTS_ID_id %}>
+                                    {% csrf_token %}
+                                    {#    BLOCKS_ID = models.AutoField(primary_key=True)#}
+                                    {#    EXPERIMENTS_ID = models.ForeignKey(Experiments, on_delete=models.CASCADE)#}
+                                    {#    PLOT = models.TextField()#}
+                                    {#    X_TRANS = models.CharField(max_length=255, default='x')#}
+                                    {#    Y_TRANS = models.CharField(max_length=255, default='y')#}
+                                    {#    ER_MODE = models.CharField(max_length=255, default='range')#}
+                                    {#    DEGREE = models.IntegerField(default=0)#}
+                                    {#    L_X_LIM = models.FloatField(default=None)#}
+                                    {#    R_X_LIM = models.FloatField(default=None)#}
+                                    {#    L_Y_LIM = models.FloatField(default=None)#}
+                                    {#    R_Y_LIM = models.FloatField(default=None)#}
+                                    {#    FIT_TYPE = models.CharField(max_length=255, default='auto')#}
+                                    {#    X_MAJOR_TICK = models.FloatField(default=None)#}
+                                    {#    Y_MAJOR_TICK = models.FloatField(default=None)#}
+                                    {#    X_MINOR_TICK = models.FloatField(default=None)#}
+                                    {#    Y_MINOR_TICK = models.FloatField(default=None)#}
+                                    <input type="hidden" name="experiment_id" value={{ block.EXPERIMENTS_ID.EXPERIMENT_ID }}>
+                                    <input type="hidden" name="block_id" value={{ block.BLOCKS_ID }}>
+{#                                    <p>{{ block.EXPERIMENTS_ID.EXPERIMENT_ID }}</p>#}
+                                    <p class="h4">Fit Type</p>
+                                    <select class="form-select" name="fit_type_{{ block.BLOCKS_ID }}" id="fit_type_{{ block.BLOCKS_ID }}" onchange="toggle_deg({{ block.BLOCKS_ID }})">
+                                        <option value="auto">Auto</option>
+                                        <option value="lin">Linear y=m*x+c</option>
+                                        <option value="pow">Power y=a*x^b</option>
+                                        <option value="exp">Exponential y=a*e^(x)+c</option>
+                                        <option value="poly">Polynomial y=a0+a1*x+a2*x^2+...+an*x^n</option>
+                                    </select>
+                                    <div class="container" id="DEGREE_{{ block.BLOCKS_ID }}" style="display: none;">
+                                        <label for="NUM_DEG_{{ block.BLOCKS_ID }}">Degree for polynomial or power (not required)</label>
+                                        <input type="number" id="NUM_DEG_{{ block.BLOCKS_ID }}" name="DEGREE_{{ block.BLOCKS_ID }}">
+                                    </div>
+                                    <br>
+                                    <p class="h4">Transformations on Data</p>
+                                    <p style="color:red">NOTICE: ADD BRACKETS WHEN USING FUNCTION, LOG ONLY SUPPORT POSITIVE INTEGERS AND NATUAL LOG(LOG means LN, not LOG10), MULTIPLICATION SIGN NEEDED</p>
+                                    <label for="X_trans_{{ block.BLOCKS_ID }}">X Transformation</label>
+                                    <input type="text" id="X_trans_{{ block.BLOCKS_ID }}" name="X_TRANS_{{ block.BLOCKS_ID }}">
+                                    <br>
+                                    <label for="Y_trans_{{ block.BLOCKS_ID }}">Y Transformation</label>
+                                    <input type="text" id="Y_trans_{{ block.BLOCKS_ID }}" name="Y_TRANS_{{ block.BLOCKS_ID }}">
+                                    <br>
+                                    <p class="h4">Error Mode(Default is Range)</p>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" id="radio_range_{{ block.BLOCKS_ID }}" name="ER_MODE_{{ block.BLOCKS_ID }}" value="Range">
+                                                <label class="form-check-label" for="radio_range_{{ block.BLOCKS_ID }}">
+                                                    Range
+                                               </label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                             <div class="form-check">
+                                                <input class="form-check-input" type="radio" id="radio_SD_{{ block.BLOCKS_ID }}" name="ER_MODE_{{ block.BLOCKS_ID }}" value="SD">
+                                                <label class="form-check-label" for="radio_SD_{{ block.BLOCKS_ID }}">
+                                                    Standard Deviation
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <p class="h4">Graph Size</p>
+                                    <p style="color:red">Need BOTH left and right</p>
+                                    <div class="row justify-content-around">
+                                        <div class="col-4">
+                                            <input type="number" name="X_LIM_L_{{ block.BLOCKS_ID }}" id=="X_LIM_L_{{ block.BLOCKS_ID }}" placeholder="X left limit">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" name="X_LIM_R_{{ block.BLOCKS_ID }}" id=="X_LIM_R_{{ block.BLOCKS_ID }}" placeholder="X right limit">
+                                        </div>
+                                    </div>
+                                    <div class="row justify-content-around">
+                                        <div class="col-4">
+                                            <input type="number" name="Y_LIM_L_{{ block.BLOCKS_ID }}" id="Y_LIM_L_{{ block.BLOCKS_ID }}" placeholder="Y low limit">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" name="Y_LIM_R_{{ block.BLOCKS_ID }}" id="Y_LIM_R_{{ block.BLOCKS_ID }}" placeholder="Y up limit">
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <p class="h4">Ticks</p>
+                                    <div class="row justify-content-around">
+                                        <div class="col-4">
+                                            <label for="X_MAJOR_TICK{{ block.BLOCKS_ID }}">X major tick</label><input type="number" name="X_MAJOR_TICK_{{ block.BLOCKS_ID }}" id="X_MAJOR_TICK{{ block.BLOCKS_ID }}" placeholder="X major tick">
+                                        </div>
+                                        <div class="col-4">
+                                            <label for="X_MINOR_TICK{{ block.BLOCKS_ID }}">X minor Tick</label><input type="number" name="X_MINOR_TICK_{{ block.BLOCKS_ID }}" id="X_MINOR_TICK{{ block.BLOCKS_ID }}" placeholder="X minor tick">
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row justify-content-around">
+                                        <div class="col-4">
+                                            <label for="Y_MAJOR_TICK{{ block.BLOCKS_ID }}">Y Major Tick</label><input type="number" name="Y_MAJOR_TICK_{{ block.BLOCKS_ID }}" id="Y_MAJOR_TICK{{ block.BLOCKS_ID }}" placeholder="Y major tick">
+                                        </div>
+                                        <div class="col-4">
+                                            <label for="Y_MINOR_TICK{{ block.BLOCKS_ID }}">Y Minor Tick</label><input type="number" name="Y_MINOR_TICK_{{ block.BLOCKS_ID }}" id="Y_MINOR_TICK{{ block.BLOCKS_ID }}" placeholder="Y minor tick">
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <button type="button" onclick="submit_change_param(event)">Submit Changes</button>
+                                </form>
+                                <div class="alert alert-danger d-none" id="frac_power_warning_{{ block.BLOCKS_ID }}">Cannot have fractional power when fit type is polynomial!</div><br>
+                                <div class="alert alert-danger d-none" id="X_LIM_ERROR_{{ block.BLOCKS_ID }}">Cannot have x left limit greater than right limit!</div>
+                                <div class="alert alert-danger d-none" id="Y_LIM_ERROR_{{ block.BLOCKS_ID }}">Cannot have y left limit greater than right limit!</div>
+                                <div class="alert alert-danger d-none" id="SERVER_ERROR_{{ block.BLOCKS_ID }}">
+                                    An unknown error occurred during processing. Please check your inputs. Common errors occur because:
+                                    <ul>
+                                        <li>The value of the experimental data is too large for it to be handled by the program. Check if you have transformations related to exponential functions. X variable is more likely to overflow</li>
+                                        <li>The value of the experimental data might not be in the domain of certain functions like 1/x. Check your transformations</li>
+                                        <li>The function in transformation section is incorrect or incomplete, that the program cannot parse it</li>
+                                    </ul>
+                                </div>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <button type="button" id="delete_{{ block.BLOCKS_ID }}" onclick="submit_val(event, 0, {{ block.BLOCKS_ID }})" value="1">DELETE BLOCK</button>
+{#                                    <p>{{ block.BLOCKS_ID }}</p>#}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                {% endfor %}
+            </div>
+            <div style="text-align: center">
+                <form method="post" id="create_form" >
+                    {% csrf_token %}
+                    <button type="button" value="1" name="create" onclick="submit_val(event, 1)">CREATE BLOCK</button>
+                </form>
+                <br>
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </body>
+
+<style>
+    .mystyle{
+        margin-left: 2.5%;
+        margin-right: 2.5%;
+        width: 95%;
+        font-size: x-small;
+    }
+</style>
+<script>
+    function return_home() {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    let formData = new FormData();
+    formData.append('redirect', '1');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', document.URL);
+    xhr.setRequestHeader('X-CSRFToken', csrfToken);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            // Handle successful response
+        } else {
+            console.log('Request failed with status ' + xhr.status);
+        }
+    };
+    xhr.onerror = function() {
+        console.log('Request failed');
+    };
+    xhr.send(formData);
+}
+    async function submit_val(event, create, block_id){ // create and delete block
+        event.preventDefault();
+        console.log(event.target)
+
+        let form = event.target.form;
+        let formData = new FormData(form);
+        if(create === 1){
+            formData.append('create', event.target.value);
+        } else {
+            formData.append('block_id', block_id);
+            formData.append('delete', event.target.value);
+        }
+
+        for (let [key, value] of formData.entries()) { // debug
+            console.log(`${key}: ${value}`);
+        }
+
+        try{
+            const response = await fetch(document.URL, {
+                method: 'POST',
+                body: formData
+            });
+            if(response.ok){
+                location.reload();
+            }
+        } catch {
+            console.log('error');
+        }
+    }
+
+    function toggle_deg(selectElement) {
+        let degInput = document.getElementById('DEGREE_' + selectElement);
+        let mode = document.getElementById('fit_type_' + selectElement)
+        if(mode.value === 'poly' || mode.value === 'pow') {
+            degInput.style.display = 'block';
+        }
+        else {
+            degInput.style.display = 'none';
+        }
+    }
+    function isInt(num){ // check whether num is integer
+        num = num.toString();
+        for(let i = 0; i < num.length; i ++){
+            let haveDot = false;
+            if(num[i] === '.'){
+                haveDot = true;
+            }
+            if(haveDot){
+                if(num[i] !== '0'){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    let experiment_id = document.URL.split('/').pop()
+    async function submit_change_param(event){ // submit change in parameter async
+        console.log(event.target);
+        event.preventDefault();
+        let form = event.target.form;
+        let formData = new FormData(form); // get entire form when there is update
+        for (let [key, value] of formData.entries()) { // for debugging
+            console.log(`${key}: ${value}`);
+        }
+        let str_blockID = formData.get('block_id');
+        if(formData.get('fit_type_' + str_blockID) === 'poly' && !(isInt(formData.get('DEGREE_' + str_blockID)))){ // deg of poly must be int
+            const get_ele = document.getElementById('frac_power_warning_' + str_blockID);
+            get_ele.classList.remove('d-none');
+            setTimeout(function(){
+                get_ele.classList.add('d-none')
+            }, 3000);
+            console.log(formData.get('DEGREE_' + str_blockID)) // debug
+            console.log(isInt(formData.get('DEGREE_' + str_blockID))); // debug
+            return;
+        }
+        console.log(formData.get('X_LIM_R_'+str_blockID) === '')
+        if(formData.get('X_LIM_L_'+str_blockID) > formData.get('X_LIM_R_'+str_blockID) &&  formData.get('X_LIM_R_'+str_blockID) !== ''){ // L Lim must be smaller
+            const get_ele = document.getElementById('X_LIM_ERROR_'+str_blockID);
+            get_ele.classList.remove('d-none');
+            setTimeout(function(){
+                get_ele.classList.add('d-none')
+            }, 3000);
+            return;
+        }
+        if(formData.get('Y_LIM_L_'+str_blockID) > formData.get('Y_LIM_R_'+str_blockID)  && formData.get('Y_LIM_R_'+str_blockID) != null){ // L Lim must be smaller
+            const get_ele = document.getElementById('Y_LIM_ERROR_'+str_blockID);
+            get_ele.classList.remove('d-none');
+            setTimeout(function(){
+                get_ele.classList.add('d-none')
+            }, 3000);
+            return;
+        }
+        console.log(formData);
+        try{
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            }); // post form data to the server, and get response
+            if(!response.ok){
+                throw new Error('not ok'); // if server has an error
+            }
+        }catch{
+            console.log('error');
+            const get_ele = document.getElementById('SERVER_ERROR_' + str_blockID)
+            get_ele.classList.remove('d-none');
+            setTimeout(function(){
+                get_ele.classList.add('d-none')
+            }, 10000);
+        }
+    }
+
+    function update_img(){
+        console.log('updating img running');
+        {% for block in blocks %}
+            console.log('updating image_{{ block.BLOCKS_ID }}');
+            const img_{{ block.BLOCKS_ID }} = document.getElementById('image_{{ block.BLOCKS_ID }}');
+            {#const xerr_{{ block.BLOCKS_ID }} = document.getElementById('xerr_{{ block.BLOCKS_ID }}')#}
+            {#const yerr_{{ block.BLOCKS_ID }} = document.getElementById('yerr_{{ block.BLOCKS_ID }}')#}
+            img_{{ block.BLOCKS_ID }}.src = '{% static 'my_app/static/PLOTS/' %}{{ block.BLOCKS_ID }}.png?t=' + Date.now();
+            {#xerr_{{ block.BLOCKS_ID }}.innerText = 'x error={{ block.X_ERR }} (1s.f)'#}
+            {#yerr_{{ block.BLOCKS_ID }}.innerText = 'y error={{ block.Y_ERR }} (1s.f)'#}
+        {% endfor %}
+    }
+    update_img()
+    setInterval(update_img, 1000);
+    console.log('seeing');
+    function get_cookies(name){
+        const cookieValue = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return cookieValue ? cookieValue.pop() : '';
+    }
+    {% for block in blocks %}
+        const form{{ block.BLOCKS_ID }} = document.getElementById('form_' + {{ block.BLOCKS_ID }});
+        form{{ block.BLOCKS_ID }}.addEventListener('submit', submit_change_param)
+    {% endfor %}
+
+
+
+</script>
+</html>

@@ -1,0 +1,75 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Home</title>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="icon" type="image/x-icon" href="{% static "my_app/static/favicon.ico"%}">
+    <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    </head>
+    <body>
+        <div class="jumbotron jumbotron-fluid" style='background-color: rgb(125, 229, 234);'>
+            <div class="container" style="margin-left:50px">
+                <div class='row'>
+                    <h1 class="display-3">{{ username }}'s Experiments</h1>
+                </div>
+            </div>
+        </div>
+        <div class="container" style="max-width:230px; display: grid">
+            <a href = "/new_experiments">
+                <div class="card">
+                    <h5 class="display-5">New Experiment</h5>
+
+{#                    <div class="card-body">#}
+{#                        <div style="text-align: center;"><img class="card-image" src="{% static 'my_app/static/New_file.png' %}" alt="Newfile" style="max-width: 90%;"></div>#}
+{#                    </div>#}
+                 </div>
+            </a>
+            <br>
+
+            <div class="row">
+                {% for experiment in experiments %}
+                    <div class="container">
+                        <button>
+                        <a href="/experiment_page/{{ experiment.EXPERIMENT_ID }}">
+                            <h2 class="display-5">{{ experiment.NAME }}</h2>
+                        </a>
+                        </button>
+                        <form method="post" action="/home/">
+                            {% csrf_token %}
+                            <input type="hidden" name="experiment_id" value="{{ experiment.EXPERIMENT_ID }}">
+                            <input type="hidden" name="delete" value="1">
+                            <input type="submit" value="Submit">
+                        </form>
+                    <br>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </body>
+    <script>
+        async function delete_experiment(event, experiment_id){
+            event.preventDefault();
+            console.log(event.target)
+            let form = event.target.form;
+            let formData = new FormData(form);
+            formData.append('delete', '1');
+            formData.append('experiment_id', experiment_id.toString());
+
+            const res = await fetch(document.URL, {
+                method: 'POST',
+                body: formData
+            })
+            if(res.ok){
+                location.reload();
+            }
+        }
+    </script>
+</html>
